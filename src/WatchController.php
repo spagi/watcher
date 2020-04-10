@@ -23,10 +23,26 @@ class WatchController
             return JsonResponse::create(null, JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $watchEntity = $this->watchByIdFromMysqlQuery->__invoke($watchId);
+        try {
+            $watchEntity = $this->watchByIdFromMysqlQuery->__invoke($watchId);
+        } catch (MySqlWatchNotFoundException $e) {
+            return JsonResponse::create(null, JsonResponse::HTTP_NOT_FOUND);
+        } catch (MySqlRepositoryException $e) {
+            return JsonResponse::create(null, JsonResponse::HTTP_GATEWAY_TIMEOUT);
+        }
+
 
         if (empty($watchEntity)) {
-            $watchEntity = $this->watchByIdFromXml->__invoke($watchId);
+            try {
+                $watchEntity = $this->watchByIdFromXml->__invoke($watchId);
+
+                if (empty($watchId)) {
+                    return JsonResponse::create(null, JsonResponse::HTTP_NOT_FOUND);
+                }
+
+            } catch (XmlLoaderException $e) {
+                return JsonResponse::create(null, JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
 
         return JsonResponse::create(json_encode($watchEntity), JsonResponse::HTTP_OK);
