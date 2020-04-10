@@ -36,7 +36,7 @@ class WatchController
             try {
                 $watchEntity = $this->watchByIdFromXml->__invoke($watchId);
 
-                if (empty($watchId)) {
+                if (empty($watchEntity)) {
                     return JsonResponse::create(null, JsonResponse::HTTP_NOT_FOUND);
                 }
 
